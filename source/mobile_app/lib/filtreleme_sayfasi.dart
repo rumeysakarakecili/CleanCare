@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 class FiltrelemeSayfasi extends StatefulWidget {
   const FiltrelemeSayfasi({super.key});
@@ -12,10 +18,10 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
   String? secilenSaat;
   String? secilenSehir;
   String? secilenIlce;
-  String? secilenMahalle;
   String? fiyatAraligi;
 
   bool secilenleriGoster = false;
+  bool kaydediliyor = false;
 
   final TextEditingController adresKontrol =
       TextEditingController();
@@ -40,7 +46,7 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
     },
   );
 
-  final Map<String, Map<String, List<String>>> addressData = {
+  Map<String, List<String>> addressData = {
     
   };
   final List<String> fiyatAralik = [
@@ -54,12 +60,13 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
 
   List<String> get districts {
     if (secilenSehir == null) return [];
-    return addressData[secilenSehir!]!.keys.toList();
+    return addressData[secilenSehir!] ?? [];
   }
 
-  List<String> get neighborhoods {
-    if (secilenSehir == null || secilenIlce == null) return [];
-    return addressData[secilenSehir!]![secilenIlce!]!;
+  @override
+  void initState() {
+    super.initState();
+    adresVerileriniYukle();
   }
 
   @override
@@ -67,6 +74,101 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
     adresKontrol.dispose();
     super.dispose();
   }
+  Future<void> adresVerileriniYukle() async {
+    final String jsonString =
+        await rootBundle.loadString('assets/data/il_ilce.json');
+
+    final Map<String, dynamic> jsonData = json.decode(jsonString);
+
+    final Map<String, List<String>> loadedData = {};
+
+    jsonData.forEach((city, districts) {
+      loadedData[city] = List<String>.from(districts as List);
+    });
+
+    setState(() {
+      addressData = loadedData;
+    });
+  }
+  Future<void> bookingKaydet() async {
+  if (secilenTarih == null ||
+      secilenSaat == null ||
+      secilenSehir == null ||
+      secilenIlce == null ||
+      fiyatAraligi == null ||
+      adresKontrol.text.trim().isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please fill in all booking fields.'),
+      ),
+    );
+    return;
+  }
+
+  try {
+
+    print("BOOKING KAYDET BASLADI");
+
+    if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+     print("BOOKING ICIN FIREBASE INIT TAMAM");
+     
+    }
+    setState(() {
+      kaydediliyor = true;
+    });
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    await FirebaseFirestore.instance.collection('bookings').add({
+      'userId': user?.uid,
+      'userEmail': user?.email,
+      'date': Timestamp.fromDate(secilenTarih!),
+      'dateText': tarihGuncelleme(secilenTarih!),
+      'time': secilenSaat,
+      'city': secilenSehir,
+      'county': secilenIlce,
+      'addressDescription': adresKontrol.text.trim(),
+      'priceRange': fiyatAraligi,
+      'serviceType': 'Home Cleaning',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Booking saved successfully.'),
+      ),
+    );
+
+    setState(() {
+      secilenTarih = null;
+      secilenSaat = null;
+      secilenSehir = null;
+      secilenIlce = null;
+      fiyatAraligi = null;
+      secilenleriGoster = false;
+      adresKontrol.clear();
+    });
+  } catch (e) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error: $e'),
+      ),
+    );
+  } finally {
+    if (!mounted) return;
+
+    setState(() {
+      kaydediliyor = false;
+    });
+  }
+}
 
   String ayAdi(int month) {
     const months = [
@@ -588,7 +690,6 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
                   setState(() {
                     secilenSehir = value;
                     secilenIlce = null;
-                    secilenMahalle = null;
                   });
                 },
               ),
@@ -602,20 +703,6 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
                 onChanged: (value) {
                   setState(() {
                     secilenIlce = value;
-                    secilenMahalle = null;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 12),
-
-              buildDropdown(
-                hint: 'Select the neighborhood',
-                value: secilenMahalle,
-                items: neighborhoods,
-                onChanged: (value) {
-                  setState(() {
-                    secilenMahalle = value;
                   });
                 },
               ),
@@ -766,11 +853,6 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Neigborhood: ${secilenMahalle ?? 'not selected'}',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
                         'Address description: ${adresKontrol.text.isEmpty ? 'could not be entered' : adresKontrol.text}',
                         style: const TextStyle(color: Colors.white70),
                       ),
@@ -779,7 +861,30 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
                         'Price range: ${fiyatAraligi ?? 'not selected'}',
                         style: const TextStyle(color: Colors.white70),
                       ),
-                    ],
+                    
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: kaydediliyor ? null : bookingKaydet,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: mainGreen,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                            child: Text(
+                              kaydediliyor ? 'Saving...' : 'Confirm Booking',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                   ),
                 ),
             ],
