@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FiltrelemeSayfasi extends StatefulWidget {
   const FiltrelemeSayfasi({super.key});
@@ -18,7 +18,6 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
   String? secilenSaat;
   String? secilenSehir;
   String? secilenIlce;
-  String? fiyatAraligi;
 
   bool secilenleriGoster = false;
   bool kaydediliyor = false;
@@ -49,12 +48,6 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
   Map<String, List<String>> addressData = {
     
   };
-  final List<String> fiyatAralik = [
-    '₺0 - ₺1000',
-    '₺1000 - ₺3000',
-    '₺3000 - ₺4000',
-    '₺5000+',
-  ];
 
   List<String> get cities => addressData.keys.toList();
 
@@ -95,7 +88,6 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
       secilenSaat == null ||
       secilenSehir == null ||
       secilenIlce == null ||
-      fiyatAraligi == null ||
       adresKontrol.text.trim().isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -114,7 +106,7 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
       options: DefaultFirebaseOptions.currentPlatform,
     );
      print("BOOKING ICIN FIREBASE INIT TAMAM");
-     
+
     }
     setState(() {
       kaydediliyor = true;
@@ -131,7 +123,6 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
       'city': secilenSehir,
       'county': secilenIlce,
       'addressDescription': adresKontrol.text.trim(),
-      'priceRange': fiyatAraligi,
       'serviceType': 'Home Cleaning',
       'createdAt': FieldValue.serverTimestamp(),
     });
@@ -149,7 +140,6 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
       secilenSaat = null;
       secilenSehir = null;
       secilenIlce = null;
-      fiyatAraligi = null;
       secilenleriGoster = false;
       adresKontrol.clear();
     });
@@ -551,7 +541,7 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
                           ),
                           SizedBox(height: 6),
                           Text(
-                            'Select the date, time, address, and budget range',
+                            'Select the date, time, and address details',
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 13,
@@ -620,7 +610,7 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
               const SizedBox(height: 24),
 
               const Text(
-                'time',
+                'Time',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -729,70 +719,17 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
                   ),
                 ),
               ),
-
-              const SizedBox(height: 24),
-
-              const Text(
-                'Price range',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: fiyatAralik.map((range) {
-                  final isSelected = fiyatAraligi == range;
-
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        fiyatAraligi = range;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Colors.white
-                            : Colors.white.withOpacity(0.10),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.14),
-                        ),
-                      ),
-                      child: Text(
-                        range,
-                        style: TextStyle(
-                          color: isSelected ? mainGreen : Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-
-              const SizedBox(height: 28),
+             const SizedBox(height: 24),
 
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      secilenleriGoster = true;
-                    });
-                  },
+                 onPressed: () {
+                  setState(() {
+                    secilenleriGoster = true;
+                  });
+                },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: mainGreen,
@@ -856,14 +793,8 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
                         'Address description: ${adresKontrol.text.isEmpty ? 'could not be entered' : adresKontrol.text}',
                         style: const TextStyle(color: Colors.white70),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Price range: ${fiyatAraligi ?? 'not selected'}',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    
-                        const SizedBox(height: 16),
-                        SizedBox(
+                      const SizedBox(height: 16),
+                         SizedBox(
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
@@ -885,8 +816,8 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
                           ),
                         ),
                       ],
+                    ),
                   ),
-                ),
             ],
           ),
         ),

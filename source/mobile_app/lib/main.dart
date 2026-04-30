@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'filtreleme_sayfasi.dart';
 import 'giris_sayfasi.dart';
 import 'kayit_sayfasi.dart';
 import 'booking_menu_sayfasi.dart';
 import 'profil_sayfasi.dart';
+import 'ilan_olusturma_sayfasi.dart';
+import 'ilanlarim_sayfasi.dart';
+import 'favorilerim_sayfasi.dart';
+import 'mesaj_listesi_sayfasi.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const CleanCareApp());
 }
 
@@ -30,6 +40,10 @@ class CleanCareApp extends StatelessWidget {
         '/bookingMenu': (context) => const BookingMenuSayfasi(),
         '/filtreleme': (context) => const FiltrelemeSayfasi(),
         '/profil': (context) => const ProfilSayfasi(),
+        '/ilanOlustur': (context) => const IlanOlusturmaSayfasi(),
+        '/ilanlarim': (context) => const IlanlarimSayfasi(),
+        '/favorilerim': (context) => const FavorilerimSayfasi(),
+        '/mesajlarim': (context) => const MesajListesiSayfasi(),
 },
     );
   }

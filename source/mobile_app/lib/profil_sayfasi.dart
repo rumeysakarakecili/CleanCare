@@ -23,17 +23,34 @@ class ProfilSayfasi extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           menuKutusu('Past Services', kartYesili),
-          menuKutusu('Favorites', kartYesili),
+          menuKutusu(
+            'My Listings',
+            kartYesili,
+            onTap: () {
+              Navigator.pushNamed(context, '/ilanlarim');
+            },
+          ),
+          menuKutusu(
+            'Favorites',
+            kartYesili,
+            onTap: () {
+              Navigator.pushNamed(context, '/favorilerim');
+            },
+          ),
           menuKutusu('Reviews', kartYesili),
           menuKutusu('Account Info', kartYesili),
           menuKutusu('Notifications', kartYesili),
           menuKutusu('Photo Sharing Approval', kartYesili),
-        ],
+       ],
       ),
     );
   }
 
-  Widget menuKutusu(String baslik, Color renk) {
+  Widget menuKutusu(
+    String baslik,
+  Color renk, {
+  VoidCallback? onTap,
+}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -41,6 +58,7 @@ class ProfilSayfasi extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
       ),
       child: ListTile(
+        onTap: onTap,
         title: Text(
           baslik,
           style: const TextStyle(color: Colors.white),
