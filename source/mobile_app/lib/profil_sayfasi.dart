@@ -31,6 +31,20 @@ class ProfilSayfasi extends StatelessWidget {
             },
           ),
           menuKutusu(
+            'My Requests',
+            kartYesili,
+            onTap: () {
+              Navigator.pushNamed(context, '/taleplerim');
+            },
+          ),
+          menuKutusu(
+            'Incoming Requests',
+            kartYesili,
+            onTap: () {
+              Navigator.pushNamed(context, '/gelenTalepler');
+            },
+          ),
+          menuKutusu(
             'Favorites',
             kartYesili,
             onTap: () {
@@ -48,9 +62,9 @@ class ProfilSayfasi extends StatelessWidget {
 
   Widget menuKutusu(
     String baslik,
-  Color renk, {
-  VoidCallback? onTap,
-}) {
+    Color renk, {
+    VoidCallback? onTap,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(

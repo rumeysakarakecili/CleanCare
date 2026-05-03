@@ -10,6 +10,8 @@ import 'ilan_olusturma_sayfasi.dart';
 import 'ilanlarim_sayfasi.dart';
 import 'favorilerim_sayfasi.dart';
 import 'mesaj_listesi_sayfasi.dart';
+import 'talep_listesi_sayfasi.dart';
+import 'gelen_talepler_sayfasi.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +46,8 @@ class CleanCareApp extends StatelessWidget {
         '/ilanlarim': (context) => const IlanlarimSayfasi(),
         '/favorilerim': (context) => const FavorilerimSayfasi(),
         '/mesajlarim': (context) => const MesajListesiSayfasi(),
+        '/taleplerim': (context) => const TalepListesiSayfasi(),
+        '/gelenTalepler': (context) => const GelenTaleplerSayfasi(),
 },
     );
   }
