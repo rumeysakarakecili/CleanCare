@@ -1,7 +1,96 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class GirisSayfasi extends StatelessWidget {
+class GirisSayfasi extends StatefulWidget {
   const GirisSayfasi({super.key});
+
+  @override
+  State<GirisSayfasi> createState() => _GirisSayfasiState();
+}
+
+class _GirisSayfasiState extends State<GirisSayfasi> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController sifreController = TextEditingController();
+
+  bool girisYapiliyor = false;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    sifreController.dispose();
+    super.dispose();
+  }
+
+  Future<void> girisYap() async {
+    final String email = emailController.text.trim();
+    final String password = sifreController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields.'),
+        ),
+      );
+      return;
+    }
+
+    if (!email.contains('@') || !email.contains('.')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid email address.'),
+        ),
+      );
+      return;
+    }
+
+    try {
+      setState(() {
+        girisYapiliyor = true;
+      });
+
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (!mounted) return;
+
+      Navigator.pushReplacementNamed(context, '/bookingMenu');
+    } on FirebaseAuthException catch (e) {
+      String message = 'Login failed. Please try again.';
+
+      if (e.code == 'user-not-found') {
+        message = 'No account was found for this email address.';
+      } else if (e.code == 'wrong-password' ||
+          e.code == 'invalid-credential') {
+        message = 'Incorrect password. Please try again.';
+      } else if (e.code == 'invalid-email') {
+        message = 'Please enter a valid email address.';
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+        ),
+      );
+    } finally {
+      if (!mounted) return;
+
+      setState(() {
+        girisYapiliyor = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,21 +118,24 @@ class GirisSayfasi extends StatelessWidget {
                 color: cardGreen,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Column(
+              child: Column(
                 children: [
                   TextField(
-                    style: TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
+                    controller: emailController,
+                    style: const TextStyle(color: Colors.white),
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
                       hintText: 'Email',
                       hintStyle: TextStyle(color: Colors.white70),
                       border: InputBorder.none,
                     ),
                   ),
-                  Divider(color: Colors.white24),
+                  const Divider(color: Colors.white24),
                   TextField(
+                    controller: sifreController,
                     obscureText: true,
-                    style: TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
                       hintText: 'Password',
                       hintStyle: TextStyle(color: Colors.white70),
                       border: InputBorder.none,
@@ -57,16 +149,14 @@ class GirisSayfasi extends StatelessWidget {
               width: double.infinity,
               height: 54,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/bookingMenu');
-                },
+                onPressed: girisYapiliyor ? null : girisYap,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: mainGreen,
                 ),
-                child: const Text(
-                  'Login',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                child: Text(
+                  girisYapiliyor ? 'Logging in...' : 'Login',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
