@@ -23,9 +23,44 @@ class _KayitSayfasiState extends State<KayitSayfasi> {
     super.dispose();
   }
 
-  Future<void> kayitOlustur() async {
+ Future<void> kayitOlustur() async {
+  final String email = emailController.text.trim();
+  final String password = sifreController.text.trim();
+
+  final RegExp passwordRule =
+      RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$');
+
   try {
     print("KAYIT BAŞLADI");
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields.'),
+        ),
+      );
+      return;
+    }
+
+    if (!email.contains('@') || !email.contains('.')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid email address.'),
+        ),
+      );
+      return;
+    }
+
+    if (!passwordRule.hasMatch(password)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Password must be at least 8 characters and include letters, numbers, and symbols.',
+          ),
+        ),
+      );
+      return;
+    }
 
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
@@ -36,26 +71,62 @@ class _KayitSayfasiState extends State<KayitSayfasi> {
 
     final FirebaseAuth auth = FirebaseAuth.instance;
 
-    await auth.createUserWithEmailAndPassword(
-      email: emailController.text.trim(),
-      password: sifreController.text.trim(),
+    final UserCredential userCredential =
+        await auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
     );
+
+    await userCredential.user?.sendEmailVerification();
 
     print("KAYIT BASARILI");
 
     if (!mounted) return;
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const BookingMenuSayfasi(),
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'A verification email has been sent to your email address.',
+        ),
+      ),
+    );
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    Navigator.pushReplacementNamed(context, '/giris');
+  } on FirebaseAuthException catch (e) {
+    String message = 'Registration failed. Please try again.';
+
+    if (e.code == 'email-already-in-use') {
+      message = 'This email address is already in use.';
+    } else if (e.code == 'invalid-email') {
+      message = 'Please enter a valid email address.';
+    } else if (e.code == 'weak-password') {
+      message =
+          'Password must be at least 8 characters and include letters, numbers, and symbols.';
+    }
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
       ),
     );
   } catch (e) {
     print("GENEL HATA: $e");
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error: $e'),
+      ),
+    );
   }
 }
-
    @override
   Widget build(BuildContext context) {
     const Color mainGreen = Color(0xFF0B7A53);
