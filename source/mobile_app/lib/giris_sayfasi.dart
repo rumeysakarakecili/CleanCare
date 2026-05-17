@@ -160,7 +160,20 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
                 ),
               ),
             ),
-          ],
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/sifreResetleme');
+              },
+              child: const Text(
+                'Forgot Password?',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+                      ],
         ),
       ),
     );
