@@ -3,6 +3,14 @@ import 'package:flutter/material.dart';
 class ProfilSayfasi extends StatelessWidget {
   const ProfilSayfasi({super.key});
 
+  void yakindaGelecek(BuildContext context, String title) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('$title feature will be added later.'),
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     const Color temaYesil = Color(0xFF0B7A53);
@@ -22,6 +30,13 @@ class ProfilSayfasi extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+            menuKutusu(
+            'Account Info',
+            kartYesili,
+            onTap: () {
+              yakindaGelecek(context, '/hesapBilgileri');
+            },
+          ),
           menuKutusu('Past Services', kartYesili),
           menuKutusu(
             'My Listings',
@@ -51,11 +66,23 @@ class ProfilSayfasi extends StatelessWidget {
               Navigator.pushNamed(context, '/favorilerim');
             },
           ),
-          menuKutusu('Reviews', kartYesili),
-          menuKutusu('Account Info', kartYesili),
-          menuKutusu('Notifications', kartYesili),
-          menuKutusu('Photo Sharing Approval', kartYesili),
-       ],
+         menuKutusu(
+            'Past Services',
+            kartYesili,
+            onTap: () {
+              yakindaGelecek(context, '/gecmisHizmetler');
+            },
+          ),
+
+          menuKutusu(
+            'Reviews',
+            kartYesili,
+            onTap: () {
+              yakindaGelecek(context, '/yorumlar');
+            },
+          ),
+
+        ],
       ),
     );
   }
