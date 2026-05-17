@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'booking_menu_sayfasi.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class KayitSayfasi extends StatefulWidget {
   const KayitSayfasi({super.key});
@@ -76,6 +78,14 @@ class _KayitSayfasiState extends State<KayitSayfasi> {
       email: email,
       password: password,
     );
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userCredential.user!.uid)
+        .set({
+      'email': email,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
 
     await userCredential.user?.sendEmailVerification();
 
