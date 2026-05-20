@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'booking_menu_sayfasi.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 
@@ -26,6 +25,7 @@ class _KayitSayfasiState extends State<KayitSayfasi> {
   }
 
  Future<void> kayitOlustur() async {
+  final String fullName = adSoyadController.text.trim();
   final String email = emailController.text.trim();
   final String password = sifreController.text.trim();
 
@@ -35,7 +35,7 @@ class _KayitSayfasiState extends State<KayitSayfasi> {
   try {
     print("KAYIT BAŞLADI");
 
-    if (email.isEmpty || password.isEmpty) {
+    if (fullName.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all fields.'),
@@ -79,10 +79,13 @@ class _KayitSayfasiState extends State<KayitSayfasi> {
       password: password,
     );
 
+    await userCredential.user?.updateDisplayName(fullName);
+
     await FirebaseFirestore.instance
         .collection('users')
         .doc(userCredential.user!.uid)
         .set({
+      'fullName': fullName,
       'email': email,
       'createdAt': FieldValue.serverTimestamp(),
     });
