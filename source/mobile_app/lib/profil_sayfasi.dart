@@ -30,14 +30,20 @@ class ProfilSayfasi extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-            menuKutusu(
+          menuKutusu(
             'Account Info',
             kartYesili,
             onTap: () {
-              yakindaGelecek(context, '/hesapBilgileri');
+              Navigator.pushNamed(context, '/accountInfo');
             },
           ),
-          menuKutusu('Past Services', kartYesili),
+          menuKutusu(
+            'Past Services',
+            kartYesili,
+            onTap: () {
+              Navigator.pushNamed(context, '/gecmisHizmetler');
+            },
+          ),
           menuKutusu(
             'My Listings',
             kartYesili,
@@ -66,24 +72,15 @@ class ProfilSayfasi extends StatelessWidget {
               Navigator.pushNamed(context, '/favorilerim');
             },
           ),
-         menuKutusu(
-            'Past Services',
-            kartYesili,
-            onTap: () {
-              yakindaGelecek(context, '/gecmisHizmetler');
-            },
-          ),
-
-          menuKutusu(
-            'Reviews',
-            kartYesili,
-            onTap: () {
-              yakindaGelecek(context, '/yorumlar');
-            },
-          ),
-
+        menuKutusu(
+          'Reviews',
+          kartYesili,
+          onTap: () {
+            Navigator.pushNamed(context, '/yorumlarim');
+          },
+        ),
         ],
-      ),
+              ),
     );
   }
 
