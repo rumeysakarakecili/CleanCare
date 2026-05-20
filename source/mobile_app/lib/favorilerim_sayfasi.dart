@@ -33,11 +33,10 @@ class FavorilerimSayfasi extends StatelessWidget {
               ),
             )
           : StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('favorites')
-                  .where('userId', isEqualTo: user.uid)
-                  .orderBy('createdAt', descending: true)
-                  .snapshots(),
+             stream: FirebaseFirestore.instance
+                .collection('favorites')
+                .where('userId', isEqualTo: user.uid)
+                .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
