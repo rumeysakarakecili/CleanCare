@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'mesaj_sayfasi.dart';
+import 'profil_bildirim_noktasi.dart';
 
 class BookingMenuSayfasi extends StatefulWidget {
   const BookingMenuSayfasi({super.key});
@@ -254,6 +255,8 @@ Future<void> bookingTalebiGonder(Map<String, dynamic> ilan) async {
       'county': ilan['county'],
       'price': ilan['price'],
       'status': 'pending',
+      'providerSeen': false,
+      'customerSeen': true,
       'createdAt': FieldValue.serverTimestamp(),
     });
 
@@ -380,22 +383,58 @@ Widget buildDropdown({
           style: TextStyle(color: Colors.white),
         ),
         actions: [
-            IconButton(
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseAuth.instance.currentUser == null
+                ? null
+                : FirebaseFirestore.instance
+                    .collection('chats')
+                    .where(
+                      'unreadFor',
+                      arrayContains: FirebaseAuth.instance.currentUser!.uid,
+                    )
+                    .snapshots(),
+            builder: (context, snapshot) {
+              final bool mesajBildirimiVar =
+                  snapshot.hasData && snapshot.data!.docs.isNotEmpty;
+
+              return Stack(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/mesajlarim');
+                    },
+                    icon: const Icon(
+                      Icons.chat_bubble_outline,
+                      color: Colors.white,
+                    ),
+                  ),
+                  if (mesajBildirimiVar)
+                    Positioned(
+                      right: 10,
+                      top: 10,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+
+          ProfilBildirimNoktasi(
+            child: IconButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/mesajlarim');
+                Navigator.pushNamed(context, '/profil');
               },
               icon: const Icon(
-                Icons.chat_bubble_outline,
+                Icons.person_outline,
                 color: Colors.white,
               ),
-            ),
-          IconButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/profil');
-            },
-            icon: const Icon(
-              Icons.person_outline,
-              color: Colors.white,
             ),
           ),
         ],
