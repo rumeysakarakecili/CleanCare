@@ -25,6 +25,12 @@ class _MesajSayfasiState extends State<MesajSayfasi> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    mesajlariOkunduYap();
+  }
+
   Future<void> mesajGonder() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -33,6 +39,20 @@ class _MesajSayfasiState extends State<MesajSayfasi> {
     if (text.isEmpty) return;
 
     try {
+      final chatDoc = await FirebaseFirestore.instance
+          .collection('chats')
+          .doc(widget.chatId)
+          .get();
+
+      final chatData = chatDoc.data();
+      final members = List<String>.from(chatData?['members'] ?? []);
+
+      final otherUserId = members.firstWhere(
+        (id) => id != user.uid,
+        orElse: () => '',
+      );
+
+      if (otherUserId.isEmpty) return;
       await FirebaseFirestore.instance
           .collection('chats')
           .doc(widget.chatId)
@@ -50,6 +70,7 @@ class _MesajSayfasiState extends State<MesajSayfasi> {
           .set({
         'lastMessage': text,
         'lastMessageAt': FieldValue.serverTimestamp(),
+        'unreadFor': FieldValue.arrayUnion([otherUserId]),
       }, SetOptions(merge: true));
 
       mesajKontrol.clear();
@@ -61,6 +82,18 @@ class _MesajSayfasiState extends State<MesajSayfasi> {
         ),
       );
     }
+  }
+
+  Future<void> mesajlariOkunduYap() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(widget.chatId)
+        .set({
+      'unreadFor': FieldValue.arrayRemove([user.uid]),
+    }, SetOptions(merge: true));
   }
 
   @override
