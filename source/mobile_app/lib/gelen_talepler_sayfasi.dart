@@ -181,6 +181,7 @@ class GelenTaleplerSayfasi extends StatelessWidget {
                                       try {
                                         await docs[index].reference.update({
                                           'status': 'accepted',
+                                          'customerSeen': false,
                                         });
 
                                         if (!context.mounted) return;
@@ -212,6 +213,7 @@ class GelenTaleplerSayfasi extends StatelessWidget {
                                       try {
                                         await docs[index].reference.update({
                                           'status': 'rejected',
+                                          'customerSeen': false,
                                         });
 
                                         if (!context.mounted) return;
@@ -246,6 +248,7 @@ class GelenTaleplerSayfasi extends StatelessWidget {
                                   try {
                                     await docs[index].reference.update({
                                       'status': 'completed',
+                                      'customerSeen': false,
                                     });
 
                                     if (!context.mounted) return;
