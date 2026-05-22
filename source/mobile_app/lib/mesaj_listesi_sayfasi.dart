@@ -82,6 +82,8 @@ class MesajListesiSayfasi extends StatelessWidget {
                         (data['listingTitle'] ?? '').toString();
                     final String lastMessage =
                         (data['lastMessage'] ?? '').toString();
+                    final unreadFor = List<String>.from(data['unreadFor'] ?? []);
+                    final bool okunmamisMesajVar = unreadFor.contains(user.uid);
 
                     return InkWell(
                       borderRadius: BorderRadius.circular(20),
@@ -104,19 +106,36 @@ class MesajListesiSayfasi extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.14),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.chat_bubble_outline,
-                                color: Colors.white,
-                              ),
+                            Stack(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.14),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.chat_bubble_outline,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                if (okunmamisMesajVar)
+                                  Positioned(
+                                    right: 0,
+                                    top: 0,
+                                    child: Container(
+                                      width: 11,
+                                      height: 11,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.redAccent,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
-                            const SizedBox(width: 14),
+                                                        const SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
