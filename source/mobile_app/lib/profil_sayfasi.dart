@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'gecmis_hizmetler_sayfasi.dart';
+import 'account_info_sayfasi.dart';
 
 class ProfilSayfasi extends StatelessWidget {
   const ProfilSayfasi({super.key});
@@ -70,14 +72,24 @@ Future<void> kendiTalepBildirimleriniTemizle() async {
             'Account Info',
             kartYesili,
             onTap: () {
-              Navigator.pushNamed(context, '/accountInfo');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AccountInfoSayfasi(),
+                ),
+              );
             },
           ),
           menuKutusu(
             'Past Services',
             kartYesili,
             onTap: () {
-              Navigator.pushNamed(context, '/gecmisHizmetler');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const GecmisHizmetlerSayfasi(),
+                ),
+              );
             },
           ),
           menuKutusu(
