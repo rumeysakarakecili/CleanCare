@@ -14,7 +14,9 @@ import 'talep_listesi_sayfasi.dart';
 import 'gelen_talepler_sayfasi.dart';
 import 'sifre_resetleme_sayfasi.dart';
 import 'account_info_sayfasi.dart';
+import 'gecmis_hizmetler_sayfasi.dart';
 import 'yorumlarim_sayfasi.dart';
+
 
 
 Future<void> main() async {
@@ -52,7 +54,8 @@ class CleanCareApp extends StatelessWidget {
         '/mesajlarim': (context) => const MesajListesiSayfasi(),
         '/taleplerim': (context) => const TalepListesiSayfasi(),
         '/gelenTalepler': (context) => const GelenTaleplerSayfasi(),
-        '/sifreResetleme': (context) => const SifreResetlemeSayfasi(),     
+        '/sifreResetleme': (context) => const SifreResetlemeSayfasi(),
+        '/gecmisHizmetler': (context) => const GecmisHizmetlerSayfasi(),
         '/accountInfo': (context) => const AccountInfoSayfasi(),
         '/yorumlarim': (context) => const YorumlarimSayfasi(),
       },
