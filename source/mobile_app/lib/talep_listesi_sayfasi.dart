@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'odeme_sayfasi.dart';
 
 class TalepListesiSayfasi extends StatelessWidget {
   const TalepListesiSayfasi({super.key});
@@ -8,13 +9,15 @@ class TalepListesiSayfasi extends StatelessWidget {
   Color durumRengi(String status) {
   switch (status.toLowerCase()) {
     case 'accepted':
-      return Colors.greenAccent;
+      return const Color(0xFF22B573);
     case 'rejected':
-      return Colors.redAccent;
+      return const Color(0xFFE85D5D);
     case 'completed':
-      return Colors.lightBlueAccent;
+      return const Color(0xFF4FA3E3);
+    case 'cancelled':
+      return const Color(0xFF8A8A8A);
     default:
-      return Colors.orangeAccent;
+      return const Color(0xFFFFA640);
   }
 }
 
@@ -26,6 +29,8 @@ IconData durumIkonu(String status) {
       return Icons.cancel;
     case 'completed':
       return Icons.done_all;
+    case 'cancelled':
+      return Icons.block;
     default:
       return Icons.hourglass_top;
   }
@@ -33,15 +38,19 @@ IconData durumIkonu(String status) {
 
   @override
   Widget build(BuildContext context) {
-    const Color mainGreen = Color(0xFF0B7A53);
-    const Color cardGreen = Color(0xFF168A61);
+    const Color temaYesil = Color(0xFF0B7A53);
+    const Color kartYesili = Color(0xFF168A61);
+    const Color acikGri = Color.fromARGB(255, 204, 205, 205);
+    const Color siyahYazi = Color.fromARGB(255, 6, 6, 6);
+    const Color beyazYazi = Colors.white;
+    const Color acikMavi = Color.fromARGB(255, 78, 118, 183);
 
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: mainGreen,
+      backgroundColor: temaYesil,
       appBar: AppBar(
-        backgroundColor: mainGreen,
+        backgroundColor: temaYesil,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
@@ -103,16 +112,20 @@ IconData durumIkonu(String status) {
                     final data = docs[index].data() as Map<String, dynamic>;
 
                     final String title =
-                        (data['listingTitle'] ?? '').toString();
+                        (data['listingTitle'] ?? 'Untitled Service').toString();
                     final String city = (data['city'] ?? '').toString();
                     final String county = (data['county'] ?? '').toString();
                     final String price = (data['price'] ?? '').toString();
-                    final String status = (data['status'] ?? '').toString();
+                    final String status = (data['status'] ?? 'pending').toString();
+                    final String paymentStatus =
+                        (data['paymentStatus'] ?? 'unpaid').toString();
+                    final String escrowStatus =
+                        (data['escrowStatus'] ?? '').toString();
 
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: cardGreen,
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Column(
@@ -121,7 +134,7 @@ IconData durumIkonu(String status) {
                           Text(
                             title.isEmpty ? 'Untitled Request' : title,
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: siyahYazi,
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
                             ),
@@ -130,17 +143,17 @@ IconData durumIkonu(String status) {
                           if (city.isNotEmpty)
                             Text(
                               'City: $city',
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: siyahYazi),
                             ),
                           if (county.isNotEmpty)
                             Text(
                               'County: $county',
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: siyahYazi),
                             ),
                           if (price.isNotEmpty)
                             Text(
                               'Price: $price',
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: siyahYazi),
                             ),
                           const SizedBox(height: 10),
                           Container(
@@ -149,31 +162,158 @@ IconData durumIkonu(String status) {
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: durumRengi(status.isEmpty ? 'pending' : status).withOpacity(0.18),
+                              color: durumRengi(status).withAlpha(40),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: durumRengi(status.isEmpty ? 'pending' : status),
+                                color: durumRengi(status),
+                                width: 1.5,
                               ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  durumIkonu(status.isEmpty ? 'pending' : status),
-                                  color: durumRengi(status.isEmpty ? 'pending' : status),
-                                  size: 18,
+                                  durumIkonu(status),
+                                  color: durumRengi(status),
+                                  size: 20,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Status: ${status.isEmpty ? 'pending' : status}',
+                                  'Status: $status',
                                   style: TextStyle(
-                                    color: durumRengi(status.isEmpty ? 'pending' : status),
-                                    fontWeight: FontWeight.w700,
+                                    color: durumRengi(status),
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
                               ],
                             ),
                           ),
+
+                          if (paymentStatus == 'paid')
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                escrowStatus == 'held'
+                                    ? 'Payment: Paid and held'
+                                    : 'Payment: Paid',
+                                style: const TextStyle(
+                                  color: temaYesil,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+
+                            if ((status == 'pending' || status == 'accepted') &&
+                                paymentStatus != 'paid')
+                              Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  height: 46,
+                                  child: OutlinedButton(
+                                    onPressed: () async {
+                                      final bool? confirm = await showDialog<bool>(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: const Text('Cancel Request'),
+                                            content: const Text(
+                                              'Are you sure you want to cancel this request?',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context, false);
+                                                },
+                                                child: const Text('No'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context, true);
+                                                },
+                                                child: const Text('Yes, Cancel'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+
+                                      if (confirm != true) return;
+
+                                      try {
+                                        await docs[index].reference.update({
+                                          'status': 'cancelled',
+                                          'cancelledBy': user.uid,
+                                          'cancelledAt': FieldValue.serverTimestamp(),
+                                          'providerSeen': false,
+                                        });
+
+                                        if (!context.mounted) return;
+
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Request cancelled.'),
+                                          ),
+                                        );
+                                      } catch (e) {
+                                        if (!context.mounted) return;
+
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Cancel error: $e'),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(color: Colors.white),
+                                      backgroundColor: kartYesili,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Cancel Request',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                          if (status == 'accepted' && paymentStatus != 'paid')
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 46,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => OdemeSayfasi(
+                                          requestId: docs[index].id,
+                                          listingTitle: title,
+                                          price: price,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: acikMavi,
+                                    foregroundColor: beyazYazi,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Pay Now',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                            ),
                                                   ],
                       ),
                     );

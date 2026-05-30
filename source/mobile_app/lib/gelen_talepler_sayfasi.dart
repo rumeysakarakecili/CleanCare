@@ -8,11 +8,13 @@ class GelenTaleplerSayfasi extends StatelessWidget {
   Color durumRengi(String status) {
     switch (status.toLowerCase()) {
       case 'accepted':
-        return Colors.greenAccent;
+        return  Color(0xFF00A651);
       case 'rejected':
         return Colors.redAccent;
       case 'completed':
         return Colors.lightBlueAccent;
+      case 'cancelled':
+        return Colors.grey;
       default:
         return Colors.orangeAccent;
     }
@@ -26,6 +28,8 @@ class GelenTaleplerSayfasi extends StatelessWidget {
       return Icons.cancel;
     case 'completed':
       return Icons.done_all;
+    case 'cancelled':
+      return Icons.block;  
     default:
       return Icons.hourglass_top;
   }
@@ -33,15 +37,17 @@ class GelenTaleplerSayfasi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color mainGreen = Color(0xFF0B7A53);
-    const Color cardGreen = Color(0xFF168A61);
+    const Color temaYesil = Color(0xFF0B7A53);
+    const Color kartYesili = Color(0xFF168A61);
+    const Color beyazYazi =  Colors.white;
+    const Color siyahYazi =  Color.fromARGB(255, 6, 6, 6);
 
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: mainGreen,
+      backgroundColor: temaYesil,
       appBar: AppBar(
-        backgroundColor: mainGreen,
+        backgroundColor: temaYesil,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
@@ -110,11 +116,15 @@ class GelenTaleplerSayfasi extends StatelessWidget {
                     final String status = (data['status'] ?? '').toString();
                     final String customerEmail =
                         (data['customerEmail'] ?? '').toString();
+                    final String paymentStatus =
+                        (data['paymentStatus'] ?? 'unpaid').toString();
+                    final String escrowStatus =
+                        (data['escrowStatus'] ?? '').toString();
 
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: cardGreen,
+                        color: beyazYazi,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Column(
@@ -123,7 +133,7 @@ class GelenTaleplerSayfasi extends StatelessWidget {
                           Text(
                             title.isEmpty ? 'Untitled Request' : title,
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: siyahYazi,
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
                             ),
@@ -132,22 +142,22 @@ class GelenTaleplerSayfasi extends StatelessWidget {
                           if (customerEmail.isNotEmpty)
                             Text(
                               'Customer: $customerEmail',
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: siyahYazi),
                             ),
                           if (city.isNotEmpty)
                             Text(
                               'City: $city',
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: siyahYazi),
                             ),
                           if (county.isNotEmpty)
                             Text(
                               'County: $county',
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: siyahYazi),
                             ),
                           if (price.isNotEmpty)
                             Text(
                               'Price: $price',
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: siyahYazi),
                             ),
                           const SizedBox(height: 10),
                           Container(
@@ -160,6 +170,7 @@ class GelenTaleplerSayfasi extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: durumRengi(status.isEmpty ? 'pending' : status),
+                                width: 2,
                               ),
                             ),
                             child: Text(
@@ -171,6 +182,33 @@ class GelenTaleplerSayfasi extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 12),
+
+                          if (paymentStatus == 'paid')
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                escrowStatus == 'held'
+                                    ? 'Payment received and held.'
+                                    : 'Payment received.',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+
+                          if ((status.isEmpty ? 'pending' : status) == 'accepted' &&
+                              paymentStatus != 'paid')
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                'Waiting for customer payment.',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
 
                           if ((status.isEmpty ? 'pending' : status) == 'pending') ...[
                             Row(
@@ -201,7 +239,7 @@ class GelenTaleplerSayfasi extends StatelessWidget {
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.white,
-                                      foregroundColor: mainGreen,
+                                      foregroundColor: temaYesil,
                                     ),
                                     child: const Text('Accept'),
                                   ),
@@ -240,72 +278,41 @@ class GelenTaleplerSayfasi extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  try {
-                                    await docs[index].reference.update({
-                                      'status': 'completed',
-                                      'customerSeen': false,
-                                    });
+                            ] else if ((status.isEmpty ? 'pending' : status) == 'accepted' &&
+                                paymentStatus == 'paid') ...[
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    try {
+                                      await docs[index].reference.update({
+                                        'status': 'completed',
+                                        'customerSeen': false,
+                                      });
 
-                                    if (!context.mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Request marked as completed.'),
-                                      ),
-                                    );
-                                  } catch (e) {
-                                    if (!context.mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Update error: $e'),
-                                      ),
-                                    );
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.black26,
-                                  foregroundColor: Colors.white,
+                                      if (!context.mounted) return;
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Request marked as completed.'),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      if (!context.mounted) return;
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Update error: $e'),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black26,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: const Text('Mark as Completed'),
                                 ),
-                                child: const Text('Mark as Completed'),
                               ),
-                            ),
-                          ] else if ((status.isEmpty ? 'pending' : status) == 'accepted') ...[
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  try {
-                                    await docs[index].reference.update({
-                                      'status': 'completed',
-                                    });
-
-                                    if (!context.mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Request marked as completed.'),
-                                      ),
-                                    );
-                                  } catch (e) {
-                                    if (!context.mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Update error: $e'),
-                                      ),
-                                    );
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.black26,
-                                  foregroundColor: Colors.white,
-                                ),
-                                child: const Text('Mark as Completed'),
-                              ),
-                            ),
-                          ],
+                            ],
                         ],
                       ),
                     );

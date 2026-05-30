@@ -55,7 +55,7 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
 
       if (!mounted) return;
 
-      Navigator.pushReplacementNamed(context, '/bookingMenu');
+      Navigator.pushReplacementNamed(context, '/altBar');
     } on FirebaseAuthException catch (e) {
       String message = 'Login failed. Please try again.';
 

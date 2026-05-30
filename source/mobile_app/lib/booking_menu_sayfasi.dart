@@ -6,6 +6,12 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'mesaj_sayfasi.dart';
 import 'profil_bildirim_noktasi.dart';
+import 'gecmis_hizmetler_sayfasi.dart';
+import 'ilanlarim_sayfasi.dart';
+import 'account_info_sayfasi.dart';
+import 'menu_sayfasi.dart';
+import 'profil_sayfasi.dart';
+
 
 class BookingMenuSayfasi extends StatefulWidget {
   const BookingMenuSayfasi({super.key});
@@ -372,6 +378,12 @@ Widget buildDropdown({
   Widget build(BuildContext context) {
     const Color temaYesil = Color(0xFF0B7A53);
     const Color kartYesili = Color(0xFF168A61);
+    const Color acikGri = Color.fromARGB(255, 204, 205, 205);
+    const Color siyahYazi =  Color.fromARGB(255, 6, 6, 6);
+    const Color beyazYazi =  Colors.white;
+    const Color acikMavi =  Color.fromARGB(255, 78, 118, 183);
+    const Color yeniYesil = Color(0xFF00A651);
+     
 
     return Scaffold(
       backgroundColor: temaYesil,
@@ -389,15 +401,29 @@ Widget buildDropdown({
                 : FirebaseFirestore.instance
                     .collection('chats')
                     .where(
-                      'unreadFor',
+                      'members',
                       arrayContains: FirebaseAuth.instance.currentUser!.uid,
                     )
                     .snapshots(),
             builder: (context, snapshot) {
-              final bool mesajBildirimiVar =
-                  snapshot.hasData && snapshot.data!.docs.isNotEmpty;
+              final user = FirebaseAuth.instance.currentUser;
+
+              bool mesajBildirimiVar = false;
+
+              if (snapshot.hasData && user != null) {
+                for (final doc in snapshot.data!.docs) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final unreadFor = List<String>.from(data['unreadFor'] ?? []);
+
+                  if (unreadFor.contains(user.uid)) {
+                    mesajBildirimiVar = true;
+                    break;
+                  }
+                }
+              }
 
               return Stack(
+                clipBehavior: Clip.none,
                 children: [
                   IconButton(
                     onPressed: () {
@@ -410,8 +436,8 @@ Widget buildDropdown({
                   ),
                   if (mesajBildirimiVar)
                     Positioned(
-                      right: 10,
-                      top: 10,
+                      right: 8,
+                      top: 8,
                       child: Container(
                         width: 10,
                         height: 10,
@@ -426,15 +452,18 @@ Widget buildDropdown({
             },
           ),
 
-          ProfilBildirimNoktasi(
-            child: IconButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/profil');
-              },
-              icon: const Icon(
-                Icons.person_outline,
-                color: Colors.white,
-              ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const MenuSayfasi(),
+                ),
+              );
+            },
+            icon: const Icon(
+              Icons.menu,
+              color: Colors.white,
             ),
           ),
         ],
@@ -588,7 +617,7 @@ Widget buildDropdown({
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: kartYesili,
+                  color: beyazYazi,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
@@ -604,13 +633,16 @@ Widget buildDropdown({
                   final String city = (ilan['city'] ?? '').toString();
                   final String county = (ilan['county'] ?? '').toString();
                   final String price = (ilan['price'] ?? '').toString();
+                  final String providerId = (ilan['createdBy'] ?? '').toString();
+                  final String providerEmail = (ilan['createdByEmail'] ?? '').toString();
+                  final String providerName = (ilan['createdByName'] ?? '').toString();
 
                   return Container(
                     width: double.infinity,
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: kartYesili,
+                      color: beyazYazi,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Column(
@@ -623,7 +655,7 @@ Widget buildDropdown({
                             child: Text(
                               title.isEmpty ? 'Untitled Listing' : title,
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: siyahYazi,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -637,35 +669,35 @@ Widget buildDropdown({
                               favoriIlanIdleri.contains((ilan['docId'] ?? '').toString())
                                   ? Icons.favorite
                                   : Icons.favorite_border,
-                              color: Colors.white,
+                              color: temaYesil,
                             ),
                           ),
                         ],
                       ),
-                                              const SizedBox(height: 8),
+                      const SizedBox(height: 8),
                         if (description.isNotEmpty)
                           Text(
                             description,
                             style: const TextStyle(
-                              color: Colors.white70,
+                              color: siyahYazi,
                               height: 1.4,
                             ),
                           ),
                         const SizedBox(height: 10),
                         Text(
                           'City: $city',
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(color: siyahYazi),
                         ),
                         if (county.isNotEmpty)
                           Text(
                             'County: $county',
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: siyahYazi),
                           ),
                         if (price.isNotEmpty)
                           Text(
                             'Price: $price',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color:siyahYazi,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -679,8 +711,8 @@ Widget buildDropdown({
                                     mesajBaslat(ilan);
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: kartYesili,
+                                    backgroundColor: yeniYesil,
+                                    foregroundColor:  Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14),
                                     ),
@@ -698,7 +730,7 @@ Widget buildDropdown({
                                     bookingTalebiGonder(ilan);
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: temaYesil,
+                                    backgroundColor: acikMavi,
                                     foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14),
@@ -711,6 +743,40 @@ Widget buildDropdown({
                                 ),
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 10),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: 46,
+                            child: OutlinedButton.icon(
+                              onPressed: providerId.isEmpty
+                                  ? null
+                                  : () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ProfilSayfasi(
+                                            profileUserId: providerId,
+                                            profileEmail: providerEmail,
+                                            profileName: providerName.isEmpty ? null : providerName,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                              icon: const Icon(Icons.person_search),
+                              label: const Text(
+                                'View Profile',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: yeniYesil,
+                                side: const BorderSide(color: yeniYesil),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
                           ),
                       ],
                     ),

@@ -7,13 +7,17 @@ class IlanlarimSayfasi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color mainGreen = Color(0xFF0B7A53);
+    const Color temaYesil = Color(0xFF0B7A53);
+    const Color acikGri = Color.fromARGB(255, 204, 205, 205);
+    const Color siyahYazi = Color.fromARGB(255, 6, 6, 6);
+    const Color beyazYazi = Colors.white;
+    
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: mainGreen,
+      backgroundColor: temaYesil,
       appBar: AppBar(
-        backgroundColor: mainGreen,
+        backgroundColor: temaYesil,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
@@ -83,10 +87,11 @@ class IlanlarimSayfasi extends StatelessWidget {
                     final String time = data['time'] ?? '';
                     final String dateText = data['dateText'] ?? '';
 
+                   
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF168A61),
+                        color: beyazYazi,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Column(
@@ -99,7 +104,7 @@ class IlanlarimSayfasi extends StatelessWidget {
                                 child: Text(
                                   title.isEmpty ? 'Untitled Listing' : title,
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: siyahYazi,
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -115,6 +120,10 @@ class IlanlarimSayfasi extends StatelessWidget {
                                         TextEditingController(text: description);
                                     final TextEditingController priceController =
                                         TextEditingController(text: price);
+                                    final TextEditingController dateController =
+                                        TextEditingController(text: dateText);
+                                    final TextEditingController timeController =
+                                        TextEditingController(text: time);
 
                                     final confirmEdit = await showDialog<bool>(
                                       context: context,
@@ -146,6 +155,22 @@ class IlanlarimSayfasi extends StatelessWidget {
                                                     labelText: 'Price',
                                                   ),
                                                 ),
+                                                const SizedBox(height: 12),
+                                                TextField(
+                                                  controller: dateController,
+                                                  decoration: const InputDecoration(
+                                                    labelText: 'Date',
+                                                    hintText: 'Example: 2026-05-23',
+                                                  ),
+                                                ),
+
+                                                TextField(
+                                                  controller: timeController,
+                                                  decoration: const InputDecoration(
+                                                    labelText: 'Time',
+                                                    hintText: 'Example: 14:30',
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -175,6 +200,9 @@ class IlanlarimSayfasi extends StatelessWidget {
                                         'title': titleController.text.trim(),
                                         'description': descriptionController.text.trim(),
                                         'price': priceController.text.trim(),
+                                        'dateText': dateController.text.trim(),
+                                        'time': timeController.text.trim(),
+                                        'updatedAt': FieldValue.serverTimestamp(),
                                       });
 
                                       if (context.mounted) {
@@ -218,7 +246,10 @@ class IlanlarimSayfasi extends StatelessWidget {
                                       await FirebaseFirestore.instance
                                           .collection('listings')
                                           .doc(doc.id)
-                                          .delete();
+                                          .update({
+                                        'isActive': false,
+                                        'deletedAt': FieldValue.serverTimestamp(),
+                                      });
 
                                       if (context.mounted) {
                                         ScaffoldMessenger.of(context).showSnackBar(
@@ -242,7 +273,7 @@ class IlanlarimSayfasi extends StatelessWidget {
                                 ],
                                 icon: const Icon(
                                   Icons.more_vert,
-                                  color: Colors.white,
+                                  color: siyahYazi,
                                 ),
                               ),
                             ],
@@ -251,35 +282,35 @@ class IlanlarimSayfasi extends StatelessWidget {
                           Text(
                             description,
                             style: const TextStyle(
-                              color: Colors.white70,
+                              color: siyahYazi,
                               height: 1.4,
                             ),
                           ),
                           const SizedBox(height: 12),
                           Text(
                             'City: $city',
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: siyahYazi),
                           ),
                           if (county.isNotEmpty)
                             Text(
                               'County: $county',
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: siyahYazi),
                             ),
                           if (dateText.isNotEmpty)
                             Text(
                               'Date: $dateText',
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: siyahYazi),
                             ),
                           if (time.isNotEmpty)
                             Text(
                               'Time: $time',
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: siyahYazi),
                             ),
                           const SizedBox(height: 8),
                           Text(
                             'Price: $price',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: siyahYazi,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

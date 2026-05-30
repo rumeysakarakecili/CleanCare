@@ -16,6 +16,7 @@ import 'sifre_resetleme_sayfasi.dart';
 import 'account_info_sayfasi.dart';
 import 'gecmis_hizmetler_sayfasi.dart';
 import 'yorumlarim_sayfasi.dart';
+import 'alt_bar_sayfasi.dart';
 
 
 
@@ -46,6 +47,7 @@ class CleanCareApp extends StatelessWidget {
         '/giris': (context) => const GirisSayfasi(),
         '/kayit': (context) => const KayitSayfasi(),
         '/bookingMenu': (context) => const BookingMenuSayfasi(),
+        '/altBar': (context) => const AltBarSayfasi(),
         '/filtreleme': (context) => const FiltrelemeSayfasi(),
         '/profil': (context) => const ProfilSayfasi(),
         '/ilanOlustur': (context) => const IlanOlusturmaSayfasi(),
@@ -58,6 +60,7 @@ class CleanCareApp extends StatelessWidget {
         '/gecmisHizmetler': (context) => const GecmisHizmetlerSayfasi(),
         '/accountInfo': (context) => const AccountInfoSayfasi(),
         '/yorumlarim': (context) => const YorumlarimSayfasi(),
+        
       },
     );
   }

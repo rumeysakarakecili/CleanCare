@@ -10,6 +10,14 @@ class ProfilBildirimNoktasi extends StatelessWidget {
     required this.child,
   });
 
+  bool temizSnapshotMu(AsyncSnapshot<QuerySnapshot> snapshot) {
+    if (!snapshot.hasData) return false;
+    if (snapshot.connectionState == ConnectionState.waiting) return false;
+
+
+    return snapshot.data!.docs.isNotEmpty;
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -21,28 +29,25 @@ class ProfilBildirimNoktasi extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('booking_requests')
+          .where('providerId', isEqualTo: user.uid)
+          .where('providerSeen', isEqualTo: false)
           .snapshots(),
-      builder: (context, requestSnapshot) {
-        bool istekBildirimiVar = false;
+      builder: (context, gelenSnapshot) {
+        final bool gelenIstekBildirimiVar =
+            temizSnapshotMu(gelenSnapshot);
 
-        if (requestSnapshot.hasData) {
-          for (final doc in requestSnapshot.data!.docs) {
-            final data = doc.data() as Map<String, dynamic>;
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('booking_requests')
+              .where('customerId', isEqualTo: user.uid)
+              .where('customerSeen', isEqualTo: false)
+              .snapshots(),
+          builder: (context, gonderilenSnapshot) {
+            final bool gonderilenIstekBildirimiVar =
+                temizSnapshotMu(gonderilenSnapshot);
 
-            final bool gelenIstekBildirimi =
-                data['providerId'] == user.uid &&
-                data['providerSeen'] == false;
-
-            final bool gonderilenIstekBildirimi =
-                data['customerId'] == user.uid &&
-                data['customerSeen'] == false;
-
-            if (gelenIstekBildirimi || gonderilenIstekBildirimi) {
-              istekBildirimiVar = true;
-              break;
-            }
-          }
-        }
+            final bool istekBildirimiVar =
+                gelenIstekBildirimiVar || gonderilenIstekBildirimiVar;
 
         return StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
@@ -51,11 +56,9 @@ class ProfilBildirimNoktasi extends StatelessWidget {
                 'unreadFor',
                 arrayContains: user.uid,
               )
-              .snapshots(),
+              .snapshots(includeMetadataChanges: true),
           builder: (context, messageSnapshot) {
-            final bool mesajBildirimiVar =
-                messageSnapshot.hasData &&
-                messageSnapshot.data!.docs.isNotEmpty;
+            final bool mesajBildirimiVar = temizSnapshotMu(messageSnapshot);
 
             final bool bildirimVar =
                 istekBildirimiVar || mesajBildirimiVar;
@@ -76,11 +79,13 @@ class ProfilBildirimNoktasi extends StatelessWidget {
                       ),
                     ),
                   ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
+                ],
+              );
+            },
+          );
+        },
+      );
+    }
+  );
+ }
 }
