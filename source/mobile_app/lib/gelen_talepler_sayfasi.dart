@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'alt_bar_sayfasi.dart';
 
 class GelenTaleplerSayfasi extends StatelessWidget {
   const GelenTaleplerSayfasi({super.key});
@@ -50,7 +51,19 @@ class GelenTaleplerSayfasi extends StatelessWidget {
         backgroundColor: temaYesil,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
+        leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AltBarSayfasi(),
+                ),
+                (route) => false,
+              );
+            },
+          ),
+          title: const Text(
           'Incoming Requests',
           style: TextStyle(
             color: Colors.white,

@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'booking_menu_sayfasi.dart';
 
 class FiltrelemeSayfasi extends StatefulWidget {
   const FiltrelemeSayfasi({super.key});
@@ -113,19 +114,6 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
     });
 
     final user = FirebaseAuth.instance.currentUser;
-
-    await FirebaseFirestore.instance.collection('bookings').add({
-      'userId': user?.uid,
-      'userEmail': user?.email,
-      'date': Timestamp.fromDate(secilenTarih!),
-      'dateText': tarihGuncelleme(secilenTarih!),
-      'time': secilenSaat,
-      'city': secilenSehir,
-      'county': secilenIlce,
-      'addressDescription': adresKontrol.text.trim(),
-      'serviceType': 'Home Cleaning',
-      'createdAt': FieldValue.serverTimestamp(),
-    });
 
     if (!mounted) return;
 
@@ -726,10 +714,16 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
                 height: 56,
                 child: ElevatedButton(
                  onPressed: () {
-                  setState(() {
-                    secilenleriGoster = true;
-                  });
-                },
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BookingMenuSayfasi(
+                          filtreSehir: secilenSehir,
+                          filtreIlce: secilenIlce,
+                        ),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: mainGreen,
@@ -794,27 +788,7 @@ class Filtreleme extends State<FiltrelemeSayfasi> {
                         style: const TextStyle(color: Colors.white70),
                       ),
                       const SizedBox(height: 16),
-                         SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: kaydediliyor ? null : bookingKaydet,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: mainGreen,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                            ),
-                            child: Text(
-                              kaydediliyor ? 'Saving...' : 'Confirm Booking',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
+                         
                       ],
                     ),
                   ),

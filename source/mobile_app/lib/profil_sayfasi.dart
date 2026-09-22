@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'mesaj_sayfasi.dart';
+import 'alt_bar_sayfasi.dart';
 
 class ProfilSayfasi extends StatelessWidget {
   final String? profileUserId;
@@ -74,6 +75,18 @@ class ProfilSayfasi extends StatelessWidget {
         backgroundColor: temaYesil,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const AltBarSayfasi(),
+              ),
+              (route) => false,
+            );
+          },
+        ),
         title: const Text(
           'Profile',
           style: TextStyle(color: Colors.white),

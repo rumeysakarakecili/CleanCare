@@ -57,7 +57,10 @@ class IlanlarimSayfasi extends StatelessWidget {
                   );
                 }
 
-                final docs = snapshot.data?.docs ?? [];
+                final docs = (snapshot.data?.docs ?? []).where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  return data['isActive'] != false;
+                }).toList();
 
                 if (docs.isEmpty) {
                   return const Center(
@@ -193,24 +196,38 @@ class IlanlarimSayfasi extends StatelessWidget {
                                     );
 
                                     if (confirmEdit == true) {
-                                      await FirebaseFirestore.instance
-                                          .collection('listings')
-                                          .doc(doc.id)
-                                          .update({
-                                        'title': titleController.text.trim(),
-                                        'description': descriptionController.text.trim(),
-                                        'price': priceController.text.trim(),
-                                        'dateText': dateController.text.trim(),
-                                        'time': timeController.text.trim(),
-                                        'updatedAt': FieldValue.serverTimestamp(),
-                                      });
+                                      try {
+                                        final String listingId = doc.id;
 
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Listing updated successfully.'),
-                                          ),
-                                        );
+                                        final Map<String, dynamic> updatedData = {
+                                          'title': titleController.text.trim(),
+                                          'description': descriptionController.text.trim(),
+                                          'price': priceController.text.trim(),
+                                          'dateText': dateController.text.trim(),
+                                          'time': timeController.text.trim(),
+                                          'updatedAt': FieldValue.serverTimestamp(),
+                                        };
+
+                                        await FirebaseFirestore.instance
+                                            .collection('listings')
+                                            .doc(listingId)
+                                            .update(updatedData);
+
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Listing updated successfully.'),
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Edit error: $e'),
+                                            ),
+                                          );
+                                        }
                                       }
                                     }
                                   }

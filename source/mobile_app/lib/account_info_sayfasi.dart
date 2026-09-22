@@ -7,15 +7,15 @@ class AccountInfoSayfasi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color mainGreen = Color(0xFF0B7A53);
-    const Color cardGreen = Color(0xFF168A61);
+    const Color temaYesili = Color(0xFF0B7A53);
+    const Color kartYesili = Color(0xFF168A61);
 
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: mainGreen,
+      backgroundColor: temaYesili,
       appBar: AppBar(
-        backgroundColor: mainGreen,
+        backgroundColor: temaYesili,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
@@ -47,7 +47,7 @@ class AccountInfoSayfasi extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: cardGreen,
+                      color: kartYesili,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Column(

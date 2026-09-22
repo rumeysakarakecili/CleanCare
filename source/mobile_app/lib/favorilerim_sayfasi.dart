@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'mesaj_sayfasi.dart';
 import 'profil_sayfasi.dart';
+import 'alt_bar_sayfasi.dart';
 
 class FavorilerimSayfasi extends StatelessWidget {
   const FavorilerimSayfasi({super.key});
@@ -19,6 +20,18 @@ class FavorilerimSayfasi extends StatelessWidget {
         backgroundColor: mainGreen,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const AltBarSayfasi(),
+              ),
+              (route) => false,
+            );
+          },
+        ),
         title: const Text(
           'Favorites',
           style: TextStyle(
@@ -92,13 +105,35 @@ class FavorilerimSayfasi extends StatelessWidget {
                           return const SizedBox();
                         }
 
-                        final ilan = listingSnapshot.data!.data() as Map<String, dynamic>;
-                        ilan['docId'] = listingSnapshot.data!.id;
+                        return StreamBuilder<DocumentSnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('listings')
+                              .doc(listingId)
+                              .snapshots(),
+                          builder: (context, listingSnapshot) {
+                            if (listingSnapshot.connectionState == ConnectionState.waiting) {
+                              return const SizedBox();
+                            }
 
-                        return ilanKarti(
-                          context,
-                          ilan,
-                          docs[index].reference,
+                            if (!listingSnapshot.hasData || !listingSnapshot.data!.exists) {
+                              return const SizedBox();
+                            }
+
+                            final ilan = listingSnapshot.data!.data() as Map<String, dynamic>;
+                            ilan['docId'] = listingSnapshot.data!.id;
+
+                            final bool isActive = ilan['isActive'] == true;
+
+                            if (!isActive) {
+                              return const SizedBox();
+                            }
+
+                            return ilanKarti(
+                              context,
+                              ilan,
+                              docs[index].reference,
+                            );
+                          },
                         );
                       },
                     );
@@ -201,6 +236,8 @@ class FavorilerimSayfasi extends StatelessWidget {
     const Color kartArkaPlan = Colors.white;
     const Color yaziKoyu = Color(0xFF1F2937);
     const Color yaziYumusak = Color(0xFF6B7280);
+    const Color yeniYesil = Color(0xFF00A651);
+    const Color favoriRed = Color.fromARGB(255, 217, 3, 3);
 
     final String title = (ilan['title'] ?? '').toString();
     final String description = (ilan['description'] ?? '').toString();
@@ -278,7 +315,7 @@ class FavorilerimSayfasi extends StatelessWidget {
                 },
                 icon: const Icon(
                   Icons.favorite,
-                  color: temaYesil,
+                  color: favoriRed,
                 ),
               ),
             ],
@@ -342,7 +379,7 @@ class FavorilerimSayfasi extends StatelessWidget {
                     mesajBaslat(context, ilan);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: temaYesil,
+                    backgroundColor: yeniYesil,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -403,8 +440,8 @@ class FavorilerimSayfasi extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               style: OutlinedButton.styleFrom(
-                foregroundColor: temaYesil,
-                side: const BorderSide(color: temaYesil),
+                foregroundColor: yeniYesil,
+                side: const BorderSide(color: yeniYesil),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),

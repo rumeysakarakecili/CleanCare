@@ -11,10 +11,17 @@ import 'ilanlarim_sayfasi.dart';
 import 'account_info_sayfasi.dart';
 import 'menu_sayfasi.dart';
 import 'profil_sayfasi.dart';
-
+import 'main.dart';
 
 class BookingMenuSayfasi extends StatefulWidget {
-  const BookingMenuSayfasi({super.key});
+  final String? filtreSehir;
+  final String? filtreIlce;
+
+  const BookingMenuSayfasi({
+    super.key,
+    this.filtreSehir,
+    this.filtreIlce,
+  });
 
   @override
   State<BookingMenuSayfasi> createState() => _BookingMenuSayfasiState();
@@ -49,6 +56,10 @@ class _BookingMenuSayfasiState extends State<BookingMenuSayfasi> {
   @override
   void initState() {
     super.initState();
+
+    secilenSehir = widget.filtreSehir;
+    secilenIlce = widget.filtreIlce;
+
     adresVerileriniYukle();
     ilanlariGetir();
     favorileriGetir();
@@ -76,22 +87,24 @@ Future<void> ilanlariGetir() async {
       yukleniyor = true;
     });
 
-    final snapshot = await FirebaseFirestore.instance
+    FirebaseFirestore.instance
         .collection('listings')
         .where('isActive', isEqualTo: true)
-        .get();
+        .snapshots()
+        .listen((snapshot) {
+      final ilanlar = snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['docId'] = doc.id;
+        return data;
+      }).toList();
 
-    final ilanlar = snapshot.docs.map((doc) {
-      final data = doc.data();
-      data['docId'] = doc.id;
-      return data;
-    }).toList();
+      if (!mounted) return;
 
-    ilanlar.shuffle(Random());
-
-    setState(() {
-      tumIlanlar = List<Map<String, dynamic>>.from(ilanlar);
-      gosterilenIlanlar = List<Map<String, dynamic>>.from(ilanlar);
+      setState(() {
+        tumIlanlar = List<Map<String, dynamic>>.from(ilanlar);
+        gosterilenIlanlar = List<Map<String, dynamic>>.from(ilanlar);
+      });
+      filtreleriUygula();
     });
   } catch (e) {
     if (!mounted) return;
@@ -331,6 +344,27 @@ Future<void> mesajBaslat(Map<String, dynamic> ilan) async {
   }
 }
 
+void filtreleriUygula() {
+  List<Map<String, dynamic>> liste =
+      List<Map<String, dynamic>>.from(tumIlanlar);
+
+  if (secilenSehir != null && secilenSehir!.isNotEmpty) {
+    liste = liste.where((ilan) {
+      return (ilan['city'] ?? '').toString() == secilenSehir;
+    }).toList();
+  }
+
+  if (secilenIlce != null && secilenIlce!.isNotEmpty) {
+    liste = liste.where((ilan) {
+      return (ilan['county'] ?? '').toString() == secilenIlce;
+    }).toList();
+  }
+
+  setState(() {
+    gosterilenIlanlar = liste;
+  });
+}
+
 Widget buildDropdown({
   required String hint,
   required String? value,
@@ -378,11 +412,11 @@ Widget buildDropdown({
   Widget build(BuildContext context) {
     const Color temaYesil = Color(0xFF0B7A53);
     const Color kartYesili = Color(0xFF168A61);
-    const Color acikGri = Color.fromARGB(255, 204, 205, 205);
     const Color siyahYazi =  Color.fromARGB(255, 6, 6, 6);
     const Color beyazYazi =  Colors.white;
     const Color acikMavi =  Color.fromARGB(255, 78, 118, 183);
     const Color yeniYesil = Color(0xFF00A651);
+    const Color favoriRed = Color.fromARGB(255, 217, 3, 3);
      
 
     return Scaffold(
@@ -390,6 +424,22 @@ Widget buildDropdown({
       appBar: AppBar(
         backgroundColor: temaYesil,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () async {
+            await FirebaseAuth.instance.signOut();
+
+            if (!context.mounted) return;
+
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const BaslangicSayfasi(),
+              ),
+              (route) => false,
+            );
+          },
+        ),
         title: const Text(
           'Booking Menu',
           style: TextStyle(color: Colors.white),
@@ -559,7 +609,7 @@ Widget buildDropdown({
                   secilenSehir = value;
                   secilenIlce = null;
                 });
-                filtreVeSirala();
+                filtreleriUygula();
               },
               color: kartYesili,
             ),
@@ -574,7 +624,7 @@ Widget buildDropdown({
                 setState(() {
                   secilenIlce = value;
                 });
-                filtreVeSirala();
+                filtreleriUygula();
               },
               color: kartYesili,
             ),
@@ -617,7 +667,7 @@ Widget buildDropdown({
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: beyazYazi,
+                  color: kartYesili,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
@@ -669,7 +719,7 @@ Widget buildDropdown({
                               favoriIlanIdleri.contains((ilan['docId'] ?? '').toString())
                                   ? Icons.favorite
                                   : Icons.favorite_border,
-                              color: temaYesil,
+                              color: favoriRed,
                             ),
                           ),
                         ],
