@@ -4,7 +4,7 @@ CleanCare is a Flutter-based mobile service platform that connects customers wit
 
 ## Features
 
-* User registration and sign-in with Firebase Authentication
+* User registration, sign-in, and password reset with Firebase Authentication
 * Service listing creation with title, description, and price
 * Province and district selection covering all 81 provinces of Türkiye
 * Date and time selection for service availability
@@ -77,7 +77,18 @@ test/       Flutter tests
 
 ## Screenshots
 
-Application screenshots will be added to this section.
+<table>
+  <tr>
+    <td align="center"><b>Welcome</b><br><img src="docs/screenshots/01.welcome.png" width="220"></td>
+    <td align="center"><b>Login</b><br><img src="docs/screenshots/02.login.png" width="220"></td>
+    <td align="center"><b>Home</b><br><img src="docs/screenshots/03.home.png" width="220"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Create Listing</b><br><img src="docs/screenshots/04.create_listing.png" width="220"></td>
+    <td align="center"><b>Booking</b><br><img src="docs/screenshots/05.booking.png" width="220"></td>
+    <td align="center"><b>Favorites</b><br><img src="docs/screenshots/06.favorites.png" width="220"></td>
+  </tr>
+</table>
 
 ## Author
 
